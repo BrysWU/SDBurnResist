@@ -59,6 +59,7 @@
       opacity: 0.7;
       z-index: 9999;
       display: none;
+      transition: opacity 0.3s;
     }
     #exit-btn:focus, #exit-btn:hover {
       opacity: 1;
@@ -73,7 +74,7 @@
       Going to download something in desktop mode? <br>
       Click the button below to enter a fullscreen black screen.<br>
       This helps prevent OLED burn-in while your Steam Deck is idle.<br>
-      <small>(Press Escape or click the corner button to exit fullscreen.)</small>
+      <small>(Press Escape or move your mouse for exit button.)</small>
     </p>
     <button id="enter-btn">Enter Fullscreen Black Screen</button>
   </div>
@@ -82,6 +83,9 @@
     const instructions = document.getElementById('instructions');
     const enterBtn = document.getElementById('enter-btn');
     const exitBtn = document.getElementById('exit-btn');
+
+    let mouseTimeout = null;
+    let hideExitBtnTimeout = null;
 
     function openFullscreen() {
       const elem = document.documentElement;
@@ -106,14 +110,18 @@
 
     function showBlackScreen() {
       instructions.classList.add('hidden');
-      exitBtn.style.display = "block";
       document.body.style.background = "#000";
+      hideExitBtn(); // Initially hide exit button
+      // Show exit button only when mouse moves
+      window.addEventListener('mousemove', handleMouseMoveInFullscreen);
     }
 
     function showInstructions() {
       instructions.classList.remove('hidden');
       exitBtn.style.display = "none";
       document.body.style.background = "#000";
+      window.removeEventListener('mousemove', handleMouseMoveInFullscreen);
+      clearTimeout(hideExitBtnTimeout);
     }
 
     enterBtn.onclick = () => {
@@ -143,9 +151,7 @@
       window.scrollTo(0,0);
     });
 
-    // Optional: Hide mouse after a few seconds for pure black
-    let mouseTimeout;
-    document.body.style.cursor = 'auto';
+    // Hide cursor after 3 seconds, show on move
     function hideCursor() {
       document.body.style.cursor = 'none';
     }
@@ -156,6 +162,24 @@
     }
     document.addEventListener('mousemove', showCursor);
     window.onload = showCursor;
+
+    // Hide/show exit button logic
+    function showExitBtn() {
+      exitBtn.style.display = "block";
+      exitBtn.style.opacity = "0.7";
+      clearTimeout(hideExitBtnTimeout);
+      hideExitBtnTimeout = setTimeout(hideExitBtn, 5000); // Hide after 5s idle
+    }
+    function hideExitBtn() {
+      exitBtn.style.display = "none";
+      clearTimeout(hideExitBtnTimeout);
+    }
+
+    function handleMouseMoveInFullscreen() {
+      if (document.fullscreenElement) {
+        showExitBtn();
+      }
+    }
   </script>
 </body>
 </html>
