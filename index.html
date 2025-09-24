@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Steam Deck Download Burn-in Preventer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A fullscreen black screen for Steam Deck users to prevent OLED burn-in while downloading in desktop mode.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 fill=%22black%22/></svg>">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      overflow: hidden;
+    }
+    #instructions {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      background: rgba(0,0,0,0.8);
+      border-radius: 20px;
+      padding: 2em 2em;
+      box-shadow: 0 0 60px #000;
+      transition: opacity 0.4s;
+    }
+    #instructions.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #enter-btn {
+      background: #222;
+      color: #fff;
+      border: none;
+      padding: 1em 2em;
+      border-radius: 10px;
+      font-size: 1.2em;
+      cursor: pointer;
+      margin-top: 1em;
+      box-shadow: 0 2px 16px #000;
+    }
+    #enter-btn:hover {
+      background: #444;
+    }
+    #exit-btn {
+      position: fixed;
+      bottom: 2em;
+      right: 2em;
+      background: #222;
+      color: #fff;
+      border: none;
+      padding: 0.7em 1.5em;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      opacity: 0.7;
+      z-index: 9999;
+      display: none;
+    }
+    #exit-btn:focus, #exit-btn:hover {
+      opacity: 1;
+      background: #444;
+    }
+  </style>
+</head>
+<body>
+  <div id="instructions">
+    <h1>Steam Deck Burn-in Preventer</h1>
+    <p>
+      Going to download something in desktop mode? <br>
+      Click the button below to enter a fullscreen black screen.<br>
+      This helps prevent OLED burn-in while your Steam Deck is idle.<br>
+      <small>(Press Escape or click the corner button to exit fullscreen.)</small>
+    </p>
+    <button id="enter-btn">Enter Fullscreen Black Screen</button>
+  </div>
+  <button id="exit-btn">Exit</button>
+  <script>
+    const instructions = document.getElementById('instructions');
+    const enterBtn = document.getElementById('enter-btn');
+    const exitBtn = document.getElementById('exit-btn');
+
+    function openFullscreen() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) { /* Safari */
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { /* IE11 */
+        elem.msRequestFullscreen();
+      }
+    }
+
+    function exitFullscreen() {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) { /* Safari */
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) { /* IE11 */
+        document.msExitFullscreen();
+      }
+    }
+
+    function showBlackScreen() {
+      instructions.classList.add('hidden');
+      exitBtn.style.display = "block";
+      document.body.style.background = "#000";
+    }
+
+    function showInstructions() {
+      instructions.classList.remove('hidden');
+      exitBtn.style.display = "none";
+      document.body.style.background = "#000";
+    }
+
+    enterBtn.onclick = () => {
+      openFullscreen();
+    };
+
+    exitBtn.onclick = () => {
+      exitFullscreen();
+    };
+
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) {
+        showBlackScreen();
+      } else {
+        showInstructions();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === "Escape") {
+        exitFullscreen();
+      }
+    });
+
+    // Prevent accidental scrolling
+    window.addEventListener('scroll', () => {
+      window.scrollTo(0,0);
+    });
+
+    // Optional: Hide mouse after a few seconds for pure black
+    let mouseTimeout;
+    document.body.style.cursor = 'auto';
+    function hideCursor() {
+      document.body.style.cursor = 'none';
+    }
+    function showCursor() {
+      document.body.style.cursor = 'auto';
+      clearTimeout(mouseTimeout);
+      mouseTimeout = setTimeout(hideCursor, 3000);
+    }
+    document.addEventListener('mousemove', showCursor);
+    window.onload = showCursor;
+  </script>
+</body>
+</html>
